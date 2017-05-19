@@ -1,0 +1,14 @@
+{
+    "name": "wangjichao/wheeltimer_pthreads",
+    "description": "An timer wheel of mutil threads version",
+    "type": "library",
+    "license": "apache",
+    "authors": [
+        {
+            "name": "wjcgithub",
+            "email": "wjc163@sina.cn"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
