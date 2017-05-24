@@ -9,13 +9,17 @@
 date_default_timezone_set('Asia/Shanghai');
 require __DIR__ . '/vendor/autoload.php';
 
-$stackArr = new \Evolution\WheelTimer\StackableArray();
-$wheel = new \Evolution\WheelTimer\WheelTimer(5,1,1,$stackArr);
+$wheel = new \Evolution\WheelTimer\WheelTimer(5,1,1);
 $wheelWorker = new \Evolution\WheelTimer\WheelWorker($wheel);
 $productSlot = new \Evolution\WheelTimer\ProductSlot($wheel);
-
+//
 $productSlot->start();
+//$productSlot->join();
 $wheelWorker->start();
+//$wheelWorker->join();
+
+//print_r('slot_'.$productSlot->join());
+//print_r('worker_'.$wheelWorker->join());
 
 //$queue = new \Evolution\WheelTimer\Storage\Queue\Redis(['host'=>'127.0.0.1', 'port'=>6379, '_unixsock' => '/tmp/redis.sock']);
 //while (1){
@@ -27,6 +31,13 @@ $wheelWorker->start();
 ////                $this->wheel->v('wplock');
 //    sleep(1);
 //}
+
+while (1) {
+    echo "==========start=========\n";
+    print_r($wheel);
+    echo "==========end=========\n";
+    sleep(1);
+}
 
 
 

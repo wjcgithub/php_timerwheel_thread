@@ -78,8 +78,6 @@ class SignalList
             $node->next = $this->head;
             $this->head = $node;
         }
-
-        print_r($this);
     }
     /**
      * 批量删除
