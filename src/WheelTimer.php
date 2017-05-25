@@ -36,6 +36,9 @@ class WheelTimer extends \Threaded {
 
     public function run(){}
 
+    /**
+     * 初始化空的时间槽
+     */
     public function init()
     {
 	    for($i=0; $i < $this->wheel_size; $i++){
@@ -47,13 +50,24 @@ class WheelTimer extends \Threaded {
         new LNode();
     }
 
+    public function get()
+    {
+        return $this->getAt($this->current_tick);
+    }
+
     public function getAt($index)
     {
+        $result = [];
         $this->checkIndex($index);
-        if(!isset($this->slots[$index])){
-            return [];
-        }
-        return $this->slots[$index];
+        $result = $this->synchronized(function($thread) use ($index) {
+            $result=[];
+            if(!empty($this->slots[$index])){
+                $result = $this->slots[$index]->getLinkContent();
+            }
+            return $result;
+        },$this);
+
+        return $result;
     }
 
     private function checkIndex($index)

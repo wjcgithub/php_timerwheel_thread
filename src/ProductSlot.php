@@ -30,7 +30,7 @@ class ProductSlot extends \Thread {
             while (1){
                 $data = $queue->rpop('delayqueue');
                 $this->wheel->add($data);
-                $this->show(\Thread::getCurrentThreadId());
+//                $this->show(\Thread::getCurrentThreadId());
                 sleep($this->wheel->product_tick);
             }
         } catch (\Exception $e) {

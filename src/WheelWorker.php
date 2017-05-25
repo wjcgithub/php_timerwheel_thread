@@ -10,9 +10,13 @@ namespace Evolution\WheelTimer;
 
 
 class WheelWorker extends \Thread {
-    public function __construct($wheel)
+    public $wheel;
+    public $workerpool;
+
+    public function __construct($wheel,$workerpool)
     {
         $this->wheel = $wheel;
+        $this->workerpool = $workerpool;
     }
 
     public function show($id)
@@ -24,6 +28,9 @@ class WheelWorker extends \Thread {
         try{
             while (1){
                 $this->wheel->tickIncr();
+                $params = $this->wheel->get();
+                print_r($params);
+                $this->workerpool->dispatch($params);
                 sleep($this->wheel->tic_interval);
             }
         } catch (\Exception $e) {
