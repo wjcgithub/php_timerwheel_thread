@@ -16,7 +16,7 @@ class WheelTimer extends \Threaded {
     public $wheel_size;
     public $slots;
     public $product_tick;
-    public $current_tick=0;
+    public $current_tick=1;
     public $tic_interval=1;
     public $lockfile=0;
     public $lastPid=0;
@@ -41,7 +41,7 @@ class WheelTimer extends \Threaded {
      */
     public function init()
     {
-	    for($i=0; $i < $this->wheel_size; $i++){
+	    for($i=1; $i <= $this->wheel_size; $i++){
 		    $this->slots[$i] = NULL;
         }
 
@@ -61,8 +61,10 @@ class WheelTimer extends \Threaded {
         $this->checkIndex($index);
         $result = $this->synchronized(function($thread) use ($index) {
             $result=[];
-            if(!empty($this->slots[$index])){
-                $result = $this->slots[$index]->getLinkContent();
+            if(!empty($thread->slots[$index])){
+                $tmp = $thread->slots[$index];
+                $result = $tmp->getLinkContent();
+                $thread->slots[$index]=$tmp;
             }
             return $result;
         },$this);
@@ -118,9 +120,10 @@ class WheelTimer extends \Threaded {
             $ptr = $this->current_tick;
             $offsetDelayTime = $delayTime+$ptr;
             $cycle = floor($delayTime / $this->wheel_size);
-            $solt = $offsetDelayTime % $this->wheel_size;
+            $slot = $offsetDelayTime % $this->wheel_size;
+            $slot = $slot ? $slot : 1;
 
-            return ['cycle'=>$cycle, 'slot'=>$solt];
+            return ['cycle'=>$cycle, 'slot'=>$slot];
         }
     }
 
@@ -156,30 +159,5 @@ class WheelTimer extends \Threaded {
         unset($this->lockArr[$lockName]);
         return True;
     }
-
-//    public function p($pid)
-//    {
-//        while(true) {
-//            if( $this->lockfile) {
-//                usleep(100);
-//            } else {
-//                if( $pid==$this->lastPid ){
-//                    usleep(100);
-//                } else {
-//                    $this->lockfile=1;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        $this->lastPid=$pid;
-//        return True;
-//    }
-//
-//    public function v()
-//    {
-//        $this->lockfile=0;
-//        return True;
-//    }
 
 }

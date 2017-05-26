@@ -13,7 +13,7 @@ class DeliverWorker extends \Thread
 {
     use Worker;
 
-    public $params = [];
+    public $params;
     public $name = '';
     public $res = '';
     public $lastRunTime;
@@ -25,7 +25,6 @@ class DeliverWorker extends \Thread
     {
         $this->name = $name;
         $this->lastRunTime = time();
-        $this->start();
         $this->shareData = $shareData;
     }
 
@@ -39,18 +38,6 @@ class DeliverWorker extends \Thread
         return $this->status;
     }
 
-    /**
-     * 发送消息
-     * @param $params array
-     */
-    public function send()
-    {
-//        print_r($this->shareData->shift()); die;
-//        $this->$params = $params;
-
-        $this->notify();
-    }
-
     public function run()
     {
         while (1){
@@ -58,12 +45,13 @@ class DeliverWorker extends \Thread
                  $this->synchronized(function($thread){
                     $thread->wait();
                  }, $this);
+
                 $this->setStatus(1);
-                if(!empty($this->params)){
+                if(count($this->shareData)>0){
                     $timeout = rand(1,5);
-                    $str = json_encode($this->params);
-                    echo "线程[{$this->name}]收到任务数据：{$str}, 执行时间为{$timeout}.\n";
-                    self::info("线程[{$this->name}]收到任务数据：{$str}, 执行时间为{$timeout}");
+                    $data = $this->shareData->shift();
+                    echo "线程[{$this->name}]收到任务数据：{$data}, 执行时间为{$timeout}.\n";
+                    self::info("线程[{$this->name}]收到任务数据：{$data}, 执行时间为{$timeout}");
                     sleep($timeout);
                 }
                 $this->setStatus(0);

@@ -9,19 +9,18 @@
 namespace Evolution\WheelTimer\worker;
 
 
-class DeliverPool extends \Thread
+class DeliverPool
 {
     use Worker;
 
     public $size;
     public $pool=[];
-    public $shareToWorker;
+    public $shareData;
 
     public function __construct($size, $shareData)
     {
         $this->size = $size;
-        $this->shareToWorker = $shareData;
-//        $this->shareToWorker->a[]=2;
+        $this->shareData = $shareData;
         $this->checkPool();
     }
 
@@ -39,17 +38,13 @@ class DeliverPool extends \Thread
      * 调度任务去执行
      * @param $params array
      */
-    public function dispatch($params)
+    public function dispatch()
     {
-        $this->checkPool();
-        $this->shareToWorker->a[] = $params;
-
+//        $this->checkPool();
         foreach ($this->pool as $worker) {
-            echo __CLASS__." worker status : ".$worker->getStatus()."\r\n";
-            print_r($this->shareToWorker);
+//            echo __CLASS__." worker status : ".$worker->getStatus()."\r\n";
             if($worker->getStatus()==0){
-                $this->shareToWorker->a[] = $params;
-                $worker->send();
+                $worker->notify();
                 return true;
             }
         }
@@ -66,7 +61,9 @@ class DeliverPool extends \Thread
                 $name = 'send task worker-'.($len+1);
                 echo '分发工作线程任务：'.$name.'--创建成功'."\r\n";
                 self::info('分发工作线程任务：'.$name.'--创建成功');
-                $this->pool[] = new DeliverWorker($name,$this->shareToWorker);
+                $worker = new DeliverWorker($name,$this->shareData);
+                $worker->start();
+                $this->pool[] = $worker;
             }
         }
     }
