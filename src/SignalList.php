@@ -114,6 +114,7 @@ class SignalList
             $thead = $this->head;
             while ($thead->next) {
                 if ($thead->next->value == $value) {
+                    //todo 常驻内存注意删除的元素如何回收内存
                     $thead->next = $thead->next->next;
                     $this->decreateLinkLen();
                     break;
@@ -167,8 +168,10 @@ class SignalList
      * 获取链表内容
      * @return string
      */
-    public function getLinkContent()
+    public function getLinkAllContent()
     {
+        $result = [];
+
         if ($this->linkLen > 0) {
             $result = [];
             $thead = $this->head;
@@ -176,9 +179,26 @@ class SignalList
                 $result[] = $thead->value;
                 $thead = $thead->next;
             }
-            return implode(',', $result);
-        } else {
-            return '链表已无内容';
         }
+
+        return $result;
+    }
+
+    public function getLinkContent()
+    {
+        $result = [];
+        if ($this->linkLen > 0) {
+            $thead = $this->head;
+            while ($thead){
+                if($thead->cycle<=0){
+                    $result[] = $thead->value;
+                    $this->delElem($thead->value);
+                } else {
+                    $thead->cycle--;
+                }
+                $thead = $thead->next;
+            }
+        }
+        return $result;
     }
 }

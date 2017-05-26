@@ -13,7 +13,7 @@ class ProductSlot extends \Thread {
     public $wheel;
     public $slots;
 
-    public function __construct($wheel)
+    public function __construct(&$wheel)
     {
         $this->wheel = $wheel;
     }
@@ -29,8 +29,9 @@ class ProductSlot extends \Thread {
             $queue = new Redis(['host'=>'127.0.0.1', 'port'=>6379, '_unixsock' => '/tmp/redis.sock']);
             while (1){
                 $data = $queue->rpop('delayqueue');
-                $this->wheel->add($data);
-                $this->show(\Thread::getCurrentThreadId());
+                if(!empty($data)){
+                    $this->wheel->add($data);
+                }
                 sleep($this->wheel->product_tick);
             }
         } catch (\Exception $e) {

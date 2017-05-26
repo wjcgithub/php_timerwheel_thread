@@ -14,6 +14,7 @@ class LNode
     public $value;
     public $next;
     public $cycle;
+    public $id;
 
     public function __construct()
     {
