@@ -8,8 +8,12 @@
 
 namespace Evolution\WheelTimer;
 
+use Evolution\WheelTimer\Storage\Log\LogTrait;
 
 class WheelWorker extends \Thread {
+
+    use LogTrait;
+
     public $wheel;
     //执行任务的线程池
     public $workerpool;
@@ -23,27 +27,22 @@ class WheelWorker extends \Thread {
         $this->shareData = $shareData;
     }
 
-    public function show($id)
-    {
-        echo "\n 消费者　threadid is {$id}\n　tick=".$this->wheel->current_tick."\r\n";
-    }
-
     function run(){
         try{
             while (1){
+//                echo "tick one {$this->wheel->current_tick}\r\n";
                 $params = $this->wheel->get();
                 $this->wheel->tickIncr();
                 if(!empty($params)){
                     $this->shareData->add($params);
                     $this->workerpool->dispatch();
                 }
-                sleep($this->wheel->tic_interval);
+                $this->synchronized(function($thread){
+                    $thread->wait($this->wheel->tic_interval);
+                }, $this);
             }
         } catch (\Exception $e) {
-            echo $e->getMessage();
-            die;
-        }finally{
-            echo "end\n";
+            self::error('时间轮线程发生错误:'.$e->getTraceAsString().'File: '.$e->getFile().'Line:'.$e->getLine());
         }
     }
 }

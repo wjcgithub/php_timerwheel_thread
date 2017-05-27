@@ -9,27 +9,27 @@
 namespace Evolution\WheelTimer;
 
 
+use Evolution\WheelTimer\Storage\Ll\LNode;
+use Evolution\WheelTimer\Storage\Ll\SignalList;
 use Evolution\WheelTimer\Storage\Queue\Redis;
 
 class WheelTimer extends \Threaded {
-    public $queue;
+    const LOCK_SUFFIX='_slot';
+
     public $wheel_size;
     public $slots;
     public $product_tick;
     public $current_tick=1;
     public $tic_interval=1;
-    public $lockfile=0;
     public $lastPid=0;
-    public $lockArr=[];
+    public $config;
 
-    const LOCK_SUFFIX='_slot';
-
-    public function __construct($wheel_size, $tic_interval, $product_tick)
+    public function __construct($config)
     {
-        $this->lockfile=0;
-        $this->tic_interval=$tic_interval;
-        $this->wheel_size=$wheel_size;
-        $this->product_tick=$product_tick;
+        $this->config = $config;
+        $this->tic_interval=$config['time_wheel']['tick_interval'];
+        $this->wheel_size=$config['time_wheel']['wheel_size'];
+        $this->product_tick=$config['time_wheel']['product_tick'];
         $this->slots = [];
         $this->init();
     }
@@ -46,7 +46,13 @@ class WheelTimer extends \Threaded {
         }
 
         new SignalList();
-        new Redis(['host'=>'127.0.0.1', 'port'=>6379, '_unixsock' => '/tmp/redis.sock']);
+        new Redis(
+            [
+                'host'=>$this->config['queue']['redis']['host'],
+                'port'=>$this->config['queue']['redis']['6379'],
+                '_unixsock' => $this->config['queue']['redis']['unixsock']
+            ]
+        );
         new LNode();
     }
 
@@ -65,6 +71,7 @@ class WheelTimer extends \Threaded {
                 $tmp = $thread->slots[$index];
                 $result = $tmp->getLinkContent();
                 $thread->slots[$index]=$tmp;
+                unset($tmp);
             }
             return $result;
         },$this);
@@ -77,7 +84,6 @@ class WheelTimer extends \Threaded {
         if(!is_numeric($index) || $index > $this->wheel_size){
             throw new IllegalArgumentException('索引错误 value:'.$index);
         }
-
         return true;
     }
 
@@ -139,25 +145,4 @@ class WheelTimer extends \Threaded {
         unset($this->slots[$this->current_tick]);
         return $data;
     }
-
-    public function p($lockName)
-    {
-        while(true) {
-            if( in_array($lockName, (array)$this->lockArr) ) {
-                usleep(100);
-            } else {
-                $this->lockArr[$lockName]=$lockName;
-            }
-        }
-
-        return True;
-    }
-
-    public function v($lockName)
-    {
-        $this->lockArr[$lockName]=NULL;
-        unset($this->lockArr[$lockName]);
-        return True;
-    }
-
 }

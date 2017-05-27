@@ -9,9 +9,11 @@
 namespace Evolution\WheelTimer\worker;
 
 
+use Evolution\WheelTimer\Storage\Log\LogTrait;
+
 class DeliverWorker extends \Thread
 {
-    use Worker;
+    use LogTrait;
 
     public $params;
     public $name = '';
@@ -48,11 +50,8 @@ class DeliverWorker extends \Thread
 
                 $this->setStatus(1);
                 if(count($this->shareData)>0){
-                    $timeout = rand(1,5);
                     $data = $this->shareData->shift();
-                    echo "线程[{$this->name}]收到任务数据：{$data}, 执行时间为{$timeout}.\n";
-                    self::info("线程[{$this->name}]收到任务数据：{$data}, 执行时间为{$timeout}");
-                    sleep($timeout);
+                    self::info("线程[{$this->name}]收到任务数据：{$data}, 开始执行！");
                 }
                 $this->setStatus(0);
             } catch (\Exception $e) {

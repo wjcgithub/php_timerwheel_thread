@@ -1,13 +1,13 @@
 <?php
-namespace Evolution\WheelTimer\worker;
+namespace Evolution\WheelTimer\Storage\Log;
 
 /**
  * Created by PhpStorm.
  * User: evolution
- * Date: 17-5-25
- * Time: 下午4:23
+ * Date: 17-5-27
+ * Time: 下午2:31
  */
-trait Worker
+trait LogTrait
 {
     static public function __callStatic($name, $arguments)
     {

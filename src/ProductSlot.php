@@ -1,5 +1,6 @@
 <?php
 namespace Evolution\WheelTimer;
+use Evolution\WheelTimer\Storage\Log\LogTrait;
 use Evolution\WheelTimer\Storage\Queue\Redis;
 
 /**
@@ -10,35 +11,44 @@ use Evolution\WheelTimer\Storage\Queue\Redis;
  */
 
 class ProductSlot extends \Thread {
-    public $wheel;
-    public $slots;
 
-    public function __construct(&$wheel)
+    use LogTrait;
+
+    public $wheel;
+    public $config;
+
+    public function __construct(&$wheel, $config)
     {
         $this->wheel = $wheel;
-    }
-
-    public function show($id)
-    {
-        echo "\n 生产者　threadid is {$id}\n　tick=".$this->wheel->current_tick."\r\n";
-//        print_r($this->wheel->slots);
+        $this->config = $config;
     }
 
     function run(){
         try{
-            $queue = new Redis(['host'=>'127.0.0.1', 'port'=>6379, '_unixsock' => '/tmp/redis.sock']);
+            $queue = new Redis(
+                [
+                    'host'=>$this->config['queue']['redis']['host'],
+                    'port'=>$this->config['queue']['redis']['6379'],
+                    '_unixsock' => $this->config['queue']['redis']['unixsock']
+                ]
+            );
             while (1){
+//                echo "product one\r\n";
+//                $this->synchronized(function($thread){
+//                    $thread->wait();
+//                }, $this);
+
                 $data = $queue->rpop('delayqueue');
                 if(!empty($data)){
                     $this->wheel->add($data);
                 }
-                sleep($this->wheel->product_tick);
+
+                $this->synchronized(function($thread){
+                    $thread->wait($this->wheel->product_tick);
+                }, $this);
             }
         } catch (\Exception $e) {
-            echo $e->getMessage()."\n";
-            echo $e->getTraceAsString();
-        }finally{
-            echo "end\n";
+            self::error('追加任务失败, 失败信息为：'.$e->getMessage().'file:'.$e->getFile().'line:'.$e->getLine()."\r\n");
         }
     }
 }
