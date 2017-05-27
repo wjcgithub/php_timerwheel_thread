@@ -6,7 +6,7 @@
  * Time: 下午2:17
  */
 
-namespace Evolution\WheelTimer;
+namespace Evolution\WheelTimer\Storage\Ll;
 
 
 class SignalList
@@ -18,10 +18,6 @@ class SignalList
         $this->head = NULL;
     }
 
-    public function copy()
-    {
-        return clone $this;//浅拷贝
-    }
     /**
      * 链表长度加１
      */
@@ -65,18 +61,23 @@ class SignalList
      */
     public function headInsert($cycle, $value = '')
     {
-        if (empty($value)) {
-            return false;
-        }
-        $node = new \Evolution\WheelTimer\LNode();
-        $node->value = $value;
-        $node->cycle = $cycle;
-        $this->increateLinkLen();
-        if (empty($this->head)) {
-            $this->head = $node;
-        } else {
-            $node->next = $this->head;
-            $this->head = $node;
+        try{
+            if (empty($value)) {
+                return false;
+            }
+            $node = new LNode();
+            $node->value = $value;
+            $node->cycle = $cycle;
+            $this->increateLinkLen();
+            if (empty($this->head)) {
+                $this->head = $node;
+            } else {
+                $node->next = $this->head;
+                $this->head = $node;
+            }
+        } catch (\Exception $e) {
+            echo $e->getTraceAsString();
+            die;
         }
     }
     /**
@@ -115,7 +116,10 @@ class SignalList
             while ($thead->next) {
                 if ($thead->next->value == $value) {
                     //todo 常驻内存注意删除的元素如何回收内存
-                    $thead->next = $thead->next->next;
+                    $tmpNext = $thead->next->next;
+                    unset($thead->next);
+                    $thead->next = $tmpNext;
+                    unset($tmpNext);
                     $this->decreateLinkLen();
                     break;
                 } else {

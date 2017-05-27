@@ -6,7 +6,7 @@
  * Time: 下午2:15
  */
 
-namespace Evolution\WheelTimer;
+namespace Evolution\WheelTimer\Storage\Ll;
 
 
 class LNode
