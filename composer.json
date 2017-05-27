@@ -10,7 +10,11 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "php": ">=5.4",
+        "ext-redis": "*",
+        "ext-seaslog": "*"
+    },
     "autoload": {
         "psr-4": {
             "Evolution\\WheelTimer\\": "src",
