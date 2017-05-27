@@ -28,7 +28,7 @@ class ProductSlot extends \Thread {
             $queue = new Redis(
                 [
                     'host'=>$this->config['queue']['redis']['host'],
-                    'port'=>$this->config['queue']['redis']['6379'],
+                    'port'=>$this->config['queue']['redis']['port'],
                     '_unixsock' => $this->config['queue']['redis']['unixsock']
                 ]
             );

@@ -9,8 +9,12 @@
 namespace Evolution\WheelTimer\Storage\Queue;
 
 
+use Evolution\WheelTimer\Storage\Log\LogTrait;
+
 class Redis extends IQueue
 {
+    use LogTrait;
+
     public $redis = null;
     const PREFIX = 'djobs:';
 
@@ -24,7 +28,7 @@ class Redis extends IQueue
                 $this->redis->connect($config['host'], $config['port']);
             }
         }catch (\Exception $e){
-            SeasLog::error('Redis连接失败' . $e->getMessage().'--'.$e->getTraceAsString());
+            self::error('Redis连接失败' . $e->getMessage().'--'.$e->getTraceAsString());
         }
     }
 
