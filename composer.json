@@ -14,6 +14,7 @@
         "php": ">=5.4",
         "ext-redis": "*",
         "ext-seaslog": "*"
+        "ext-pthread": "*"
     },
     "autoload": {
         "psr-4": {
